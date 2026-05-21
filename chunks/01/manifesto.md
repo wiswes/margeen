@@ -48,7 +48,7 @@ Three claims, in order of decreasing comfort:
 2. **A free SaaS stack is enough to run the whole loop.** Shopify dev store
    (free), Google AI Studio (free tier, generous), GitHub (free), a free
    workflow tool (Activepieces or self-hosted n8n). Hosting via the
-   Hetzner box we already have, no incremental cost.
+   small VPS we already have, no incremental cost.
 3. **The arithmetic works.** A 15%+ landed-margin product *does* exist on
    AliExpress for plenty of niches. The hard part isn't finding the SKU;
    it's costing it out honestly — and that's exactly what an agent can do
@@ -113,14 +113,14 @@ and doesn't allow.
 
 - **Gemini 2.5 Flash** via Google AI Studio — generous free tier, fine for
   bursty work.
-- **Shopify Partners dev store** (`wiswes2.myshopify.com`) — costs nothing,
-  full API access, cannot take real payments. That last part is fine: most
-  buyer-facing tests use shadow checkouts.
+- **Shopify Partners dev store** — costs nothing, full API access, cannot
+  take real payments. That last part is fine: most buyer-facing tests use
+  shadow checkouts.
 - **GitHub free** for code, **Cloudflare Pages / Vercel hobby** if a
   static surface is ever needed.
 - **A free workflow tool** when the chunks need orchestration: most
   likely [Activepieces](https://www.activepieces.com/) (open-source n8n
-  competitor) or self-hosted n8n on the Hetzner box.
+  competitor) or self-hosted n8n on the small VPS.
 
 **Allowed but only if needed:**
 
@@ -203,31 +203,3 @@ finding, not a failure. The honest ending of "I tried, the margin isn't
 there, and here is what I learned" is worth more than a half-built app
 that quietly stops getting commits.
 
----
-
-## What's in this chunk
-
-Day-1 deliverables — the minimum that makes the rules above real:
-
-- This article, published at
-  `wiswes.com/blog/margeen-project/margeen-01-manifesto`.
-- A bootstrapped `github.com/wiswes/margeen` repo: `README.md` (the pitch
-  + daily log table), `LICENSE` (MIT), `.gitignore`, `docs/PLAN.md` (the
-  40-chunk index), and this chunk's notes under `chunks/01/`.
-- One X post and one LinkedIn post, written by hand and posted by hand.
-
-No agent code yet. The agent shows up in Chunk 4.
-
----
-
-## How to follow
-
-- **GitHub** — every chunk pushes to
-  [`github.com/wiswes/margeen`](https://github.com/wiswes/margeen).
-- **Blog** — long-form lives at
-  [`wiswes.com/blog/margeen-project`](https://wiswes.com/blog/margeen-project).
-- **X / LinkedIn** — short version, posted by hand.
-
-Day 2 is "the arithmetic of margin: why 15% almost never means 15%."
-
-See you tomorrow.

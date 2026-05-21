@@ -20,8 +20,7 @@ It should:
 2. **Cost them out** — landed cost, fees, shipping, refunds, ad-cost — and
    compute *real* margin, not catalogue margin.
 3. **Ask you** to approve the shortlist.
-4. **List** the approved products on a Shopify store (here:
-   `wiswes2.myshopify.com`, dev).
+4. **List** the approved products on a Shopify dev store.
 5. **Drop-ship** them when an order comes in.
 6. **Watch the numbers** — kill duds, escalate winners.
 
