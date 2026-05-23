@@ -1,0 +1,72 @@
+{
+  "schema": "margeen.search/v1",
+  "timestamp": "20260523T104228Z",
+  "prompt": "chinese iphone",
+  "source": "aliexpress",
+  "http_status": 200,
+  "response_bytes": 671782,
+  "blocked": false,
+  "candidate_count": 12,
+  "candidates": [
+    {
+      "product_id": "3256811985952059",
+      "url": "https://www.aliexpress.us/item/3256811985952059.html",
+      "title": "Apple iPhone 16 Pro 128/256/512 GB Unlocked Excellent Condition All Colors (Renewed)"
+    },
+    {
+      "product_id": "3256811969027732",
+      "url": "https://www.aliexpress.us/item/3256811969027732.html",
+      "title": "Apple iPhone 14 128/256/512GB Unlocked Excellent Condition All Colors (Renewed)"
+    },
+    {
+      "product_id": "3256811976161941",
+      "url": "https://www.aliexpress.us/item/3256811976161941.html",
+      "title": "Apple iPhone 15 Pro 128/256/512GB Unlocked Excellent Condition All Colors (Renewed)"
+    },
+    {
+      "product_id": "3256809946882310",
+      "url": "https://www.aliexpress.us/item/3256809946882310.html",
+      "title": "Original OPPO Find X9 Pro 5G Smart Phone Dimensity 9500 6.78'' 120Hz AMOLED Screen 7500mAh 80W SuperCharge NFC Chinese Version"
+    },
+    {
+      "product_id": "3256811964829036",
+      "url": "https://www.aliexpress.us/item/3256811964829036.html",
+      "title": "Apple iPhone 14 Plus 128/256/512GB Unlocked Excellent Condition All Colors (Renewed)"
+    },
+    {
+      "product_id": "3256810369096306",
+      "url": "https://www.aliexpress.us/item/3256810369096306.html",
+      "title": "Original Apple iPhone 12 mini Smartphone 5.4\" IOS Face ID NFC 5G Unlocked 12mini Mobile Phones"
+    },
+    {
+      "product_id": "3256806292847928",
+      "url": "https://www.aliexpress.us/item/3256806292847928.html",
+      "title": "Original Apple iPhone 6 Unlocked Dual Core 4.7 inch IOS 16/64/128GB ROM 1.4GHz 8MP 3G 4G LTE Used Fingerprint Mobile Cell Phone"
+    },
+    {
+      "product_id": "3256811946045743",
+      "url": "https://www.aliexpress.us/item/3256811946045743.html",
+      "title": "Chinese Version OPPO Find X9s Pro 5G Smartphone 6.32\" 144Hz AMOLED Screen Mediatek Dimensity 9500 Dual 200MP Camera 7025mAh NFC"
+    },
+    {
+      "product_id": "3256810415557075",
+      "url": "https://www.aliexpress.us/item/3256810415557075.html",
+      "title": "Original Apple iPhone 6 Unlocked 4.7 inch IOS12 Fingerprint Mobile Cell Phone Can't Use icloud ID and New APP"
+    },
+    {
+      "product_id": "3256810369074883",
+      "url": "https://www.aliexpress.us/item/3256810369074883.html",
+      "title": "Apple iPhone 13 Pro 6.1\" Phone 13 Pro Max 6.7\" Original Retina OLED Face ID Unlocked 5G Mobile Phone"
+    },
+    {
+      "product_id": "3256810404427668",
+      "url": "https://www.aliexpress.us/item/3256810404427668.html",
+      "title": "Original Unlocked Apple iPhone 7 4G LTE Mobile Cellphone 4.7'' 12MP Fingerprint Touch ID Smartphone"
+    },
+    {
+      "product_id": "3256811947851180",
+      "url": "https://www.aliexpress.us/item/3256811947851180.html",
+      "title": "Chinese Version OPPO Find X9 Ultra 5G Smartphone Snapdragon 8 Elite Gen 5 6.82\" 144Hz AMOLED Screen 7050mAh Dual 200MP Camera"
+    }
+  ]
+}
