@@ -136,6 +136,10 @@ def parse_items(html_body: str) -> list[dict]:
     pattern = re.compile(
         r'href="(//(?:www\.)?aliexpress\.[a-z]{2,3}/item/(\d+)\.html[^"]*)"[^>]*>'
     )
+    # First "$X.YY" or "US $X.YY" we see inside a product chunk is the
+    # listed price. There can be a few price spans (current, original,
+    # sku-coupon); the first one is what the user sees as the headline.
+    price_pat = re.compile(r'(?:US ?\$|\$)\s?([0-9]+(?:[.,][0-9]{1,2})?)')
     for m in pattern.finditer(html_body):
         pid = m.group(2)
         if pid in seen:
@@ -144,10 +148,20 @@ def parse_items(html_body: str) -> list[dict]:
         chunk = html_body[m.end():m.end() + 3500]
         title_m = re.search(r'title="([^"]{10,250})"', chunk)
         title = html.unescape(title_m.group(1)) if title_m else None
+        price_m = price_pat.search(chunk)
+        price_str = price_m.group(0) if price_m else None
+        price_value = None
+        if price_m:
+            try:
+                price_value = float(price_m.group(1).replace(",", "."))
+            except ValueError:
+                price_value = None
         items.append({
             "product_id": pid,
             "url": url,
             "title": title,
+            "price_str": price_str,
+            "price_usd": price_value,
         })
         seen.add(pid)
     return items

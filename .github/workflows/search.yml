@@ -100,9 +100,18 @@ jobs:
             echo "- **Stable latest:** [\`candidates/latest.json\`]($LATEST_URL)"
             echo ""
             if [ "$COUNT" -gt 0 ]; then
-              echo "### Top products"
+              echo "### Top products (cheapest first)"
               echo ""
-              jq -r '.candidates[:5][] | "- [" + ((.title // "(no title)") | gsub("\\|"; "\\|")) + "](" + .url + ")"' "$LATEST_FILE"
+              echo "| Price | Product |"
+              echo "|---|---|"
+              jq -r '
+                [.candidates[] | select(.price_usd != null)] + [.candidates[] | select(.price_usd == null)]
+                | .[0:8][]
+                | "| " + (.price_str // "—")
+                  + " | ["
+                  + ((.title // "(no title)") | gsub("\\|"; "\\|") | .[0:110])
+                  + "](" + .url + ") |"
+              ' "$LATEST_FILE"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
