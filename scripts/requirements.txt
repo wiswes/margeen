@@ -1,0 +1,2 @@
+# No third-party deps for chunk 02 — the script uses only stdlib and
+# shells out to curl for the actual HTTP. This kept the workflow trivial.

@@ -1,0 +1,63 @@
+name: Margeen search
+
+# Two ways to start a search:
+#   1. workflow_dispatch  — manually from GitHub UI (input field for the prompt)
+#   2. repository_dispatch — POSTed from Shopify Flow when a draft product
+#      tagged "margeen-search" is created (see docs/SETUP.md)
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: "Search prompt (e.g. 'blue kids pants, 15% margin')"
+        required: true
+        type: string
+  repository_dispatch:
+    types: [margeen_search]
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve prompt
+        id: prompt
+        env:
+          MANUAL_PROMPT: ${{ github.event.inputs.prompt }}
+          DISPATCH_PROMPT: ${{ github.event.client_payload.prompt }}
+        run: |
+          if [ -n "$MANUAL_PROMPT" ]; then
+            PROMPT="$MANUAL_PROMPT"
+          else
+            PROMPT="$DISPATCH_PROMPT"
+          fi
+          if [ -z "$PROMPT" ]; then
+            echo "::error::No prompt supplied in workflow_dispatch input or repository_dispatch payload"
+            exit 1
+          fi
+          echo "value=$PROMPT" >> "$GITHUB_OUTPUT"
+          echo "Resolved prompt: $PROMPT"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run AliExpress search
+        run: python scripts/search_aliexpress.py "${{ steps.prompt.outputs.value }}"
+
+      - name: Commit results
+        run: |
+          git config user.email "margeen-bot@users.noreply.github.com"
+          git config user.name "margeen-bot"
+          git add candidates/
+          if git diff --staged --quiet; then
+            echo "No new candidate files to commit."
+          else
+            git commit -m "search: ${{ steps.prompt.outputs.value }}"
+            git push
+          fi
