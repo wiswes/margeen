@@ -51,9 +51,13 @@ jobs:
           python-version: "3.12"
 
       - name: Run AliExpress search
-        run: python scripts/search_aliexpress.py "${{ steps.prompt.outputs.value }}"
+        env:
+          PROMPT: ${{ steps.prompt.outputs.value }}
+        run: python scripts/search_aliexpress.py "$PROMPT"
 
       - name: Commit results
+        env:
+          PROMPT: ${{ steps.prompt.outputs.value }}
         run: |
           set -euo pipefail
           git config user.email "wiswes@users.noreply.github.com"
@@ -62,6 +66,6 @@ jobs:
           if git diff --staged --quiet; then
             echo "No new candidate files to commit."
           else
-            git commit -m "search: ${{ steps.prompt.outputs.value }}"
+            git commit -m "search: $PROMPT"
             git push
           fi
