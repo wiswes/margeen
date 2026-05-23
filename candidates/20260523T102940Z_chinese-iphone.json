@@ -1,0 +1,10 @@
+{
+  "schema": "margeen.search/v1",
+  "timestamp": "20260523T102940Z",
+  "prompt": "chinese iphone",
+  "source": "aliexpress",
+  "http_status": 200,
+  "blocked": false,
+  "candidate_count": 0,
+  "candidates": []
+}
