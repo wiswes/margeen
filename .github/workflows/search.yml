@@ -58,9 +58,61 @@ jobs:
           python-version: "3.12"
 
       - name: Run AliExpress search
+        id: search
         env:
           PROMPT: ${{ steps.prompt.outputs.value }}
-        run: python scripts/search_aliexpress.py "$PROMPT"
+        run: |
+          python scripts/search_aliexpress.py "$PROMPT"
+          LATEST=$(ls -t candidates/*.json 2>/dev/null | grep -v latest.json | head -1)
+          echo "latest_file=$LATEST" >> "$GITHUB_OUTPUT"
+          echo "latest_basename=$(basename "$LATEST")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload result as artifact
+        if: steps.search.outputs.latest_file != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: search-result
+          path: |
+            ${{ steps.search.outputs.latest_file }}
+            candidates/latest.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Write run summary
+        if: steps.search.outputs.latest_file != ''
+        env:
+          PROMPT: ${{ steps.prompt.outputs.value }}
+          LATEST_FILE: ${{ steps.search.outputs.latest_file }}
+          LATEST_BASENAME: ${{ steps.search.outputs.latest_basename }}
+        run: |
+          REPO_URL="https://github.com/${{ github.repository }}"
+          # Use the commit SHA that the workflow ran from for the timestamped
+          # file (it lives in the commit-results push later). For latest.json
+          # the same SHA also works.
+          RESULT_URL="$REPO_URL/blob/main/$LATEST_FILE"
+          LATEST_URL="$REPO_URL/blob/main/candidates/latest.json"
+          COUNT=$(python -c "import json; d=json.load(open('$LATEST_FILE')); print(d['candidate_count'])")
+          BLOCKED=$(python -c "import json; d=json.load(open('$LATEST_FILE')); print(d['blocked'])")
+          {
+            echo "## Margeen search — \`$PROMPT\`"
+            echo ""
+            echo "- **Candidates found:** $COUNT"
+            echo "- **Blocked:** $BLOCKED"
+            echo "- **Result file (this run):** [\`$LATEST_BASENAME\`]($RESULT_URL)"
+            echo "- **Stable latest:** [\`candidates/latest.json\`]($LATEST_URL)"
+            echo ""
+            if [ "$COUNT" -gt 0 ]; then
+              echo "### Top products"
+              echo ""
+              python - <<'PY'
+import json, os
+d = json.load(open(os.environ['LATEST_FILE']))
+for c in d['candidates'][:5]:
+    title = (c.get('title') or '').replace('|', '\\|').strip()[:120]
+    print(f"- [{title}]({c['url']})")
+PY
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Commit results
         env:
