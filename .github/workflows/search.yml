@@ -85,14 +85,12 @@ jobs:
           LATEST_FILE: ${{ steps.search.outputs.latest_file }}
           LATEST_BASENAME: ${{ steps.search.outputs.latest_basename }}
         run: |
+          set -euo pipefail
           REPO_URL="https://github.com/${{ github.repository }}"
-          # Use the commit SHA that the workflow ran from for the timestamped
-          # file (it lives in the commit-results push later). For latest.json
-          # the same SHA also works.
           RESULT_URL="$REPO_URL/blob/main/$LATEST_FILE"
           LATEST_URL="$REPO_URL/blob/main/candidates/latest.json"
-          COUNT=$(python -c "import json; d=json.load(open('$LATEST_FILE')); print(d['candidate_count'])")
-          BLOCKED=$(python -c "import json; d=json.load(open('$LATEST_FILE')); print(d['blocked'])")
+          COUNT=$(jq -r '.candidate_count' "$LATEST_FILE")
+          BLOCKED=$(jq -r '.blocked' "$LATEST_FILE")
           {
             echo "## Margeen search — \`$PROMPT\`"
             echo ""
@@ -104,13 +102,7 @@ jobs:
             if [ "$COUNT" -gt 0 ]; then
               echo "### Top products"
               echo ""
-              python - <<'PY'
-import json, os
-d = json.load(open(os.environ['LATEST_FILE']))
-for c in d['candidates'][:5]:
-    title = (c.get('title') or '').replace('|', '\\|').strip()[:120]
-    print(f"- [{title}]({c['url']})")
-PY
+              jq -r '.candidates[:5][] | "- [" + ((.title // "(no title)") | gsub("\\|"; "\\|")) + "](" + .url + ")"' "$LATEST_FILE"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
