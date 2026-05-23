@@ -40,6 +40,35 @@ BOT_BLOCK_MARKERS = (
     "captcha_session_id",
 )
 
+# How many past searches to keep in candidates/. Anything older gets
+# pruned on every run so the folder does not flood across 40 chunks.
+KEEP_RECENT = 10
+
+
+def prune_candidates(out_dir: Path) -> None:
+    """Keep the N most recent timestamped search results; delete the rest.
+
+    `latest.json` and `.gitkeep` are always kept. Files are grouped by their
+    `YYYYMMDDTHHMMSSZ_` prefix so a JSON and its `.debug.html` counterpart
+    are evicted together.
+    """
+    ts_re = re.compile(r"^(\d{8}T\d{6}Z)_")
+    grouped: dict[str, list[Path]] = {}
+    for p in out_dir.iterdir():
+        if not p.is_file() or p.name in ("latest.json", ".gitkeep"):
+            continue
+        m = ts_re.match(p.name)
+        if not m:
+            continue
+        grouped.setdefault(m.group(1), []).append(p)
+    keep = set(sorted(grouped.keys(), reverse=True)[:KEEP_RECENT])
+    for ts, files in grouped.items():
+        if ts in keep:
+            continue
+        for p in files:
+            print(f"[margeen] pruning {p.name}")
+            p.unlink()
+
 
 def slugify(text: str, max_len: int = 40) -> str:
     s = re.sub(r"[^a-zA-Z0-9]+", "-", text.strip().lower())
@@ -170,8 +199,15 @@ def main() -> int:
         "candidate_count": len(items),
         "candidates": items,
     }
-    out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
+    serialised = json.dumps(payload, ensure_ascii=False, indent=2)
+    out_path.write_text(serialised)
     print(f"[margeen] wrote {out_path}")
+
+    # Stable pointer to the most recent search — overwritten every run.
+    # Lets anyone link to a single URL for "the latest result".
+    latest_path = out_dir / "latest.json"
+    latest_path.write_text(serialised)
+    print(f"[margeen] also updated {latest_path}")
 
     # Debug aid: when we got nothing useful, save the raw response body
     # alongside the JSON so we can inspect what AliExpress actually
@@ -181,6 +217,9 @@ def main() -> int:
         debug_path = out_dir / f"{ts}_{slugify(prompt)}.debug.html"
         debug_path.write_text(body, encoding="utf-8")
         print(f"[margeen] no candidates — saved raw body to {debug_path}")
+
+    # Tidy up — keep candidates/ from flooding across daily runs.
+    prune_candidates(out_dir)
 
     # Don't fail the workflow when blocked — the JSON record is the finding.
     return 0
