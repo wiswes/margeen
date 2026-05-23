@@ -17,6 +17,13 @@ on:
 permissions:
   contents: write
 
+# Serialize search runs. Two concurrent triggers (e.g. you click "Run
+# workflow" while a previous one is still pushing) would race on the
+# `git push` step. With cancel-in-progress: false they queue cleanly.
+concurrency:
+  group: margeen-search
+  cancel-in-progress: false
+
 jobs:
   search:
     runs-on: ubuntu-latest
@@ -65,7 +72,25 @@ jobs:
           git add -A candidates/
           if git diff --staged --quiet; then
             echo "No new candidate files to commit."
-          else
-            git commit -m "search: $PROMPT"
-            git push
+            exit 0
           fi
+          git commit -m "search: $PROMPT"
+          # Retry push with rebase if a concurrent / re-run job pushed
+          # first. `-X theirs` means "keep our just-built commit on
+          # conflict" — only latest.json could realistically clash, and
+          # our run is the more recent search so its latest.json wins.
+          for attempt in 1 2 3; do
+            if git push; then
+              echo "push ok on attempt $attempt"
+              exit 0
+            fi
+            echo "push rejected on attempt $attempt — rebasing on origin/main"
+            git fetch origin main
+            git rebase -X theirs origin/main || {
+              echo "::error::rebase failed; aborting"
+              git rebase --abort || true
+              exit 1
+            }
+          done
+          echo "::error::push still failing after 3 attempts"
+          exit 1
