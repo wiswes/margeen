@@ -162,12 +162,22 @@ def main() -> int:
         "prompt": prompt,
         "source": "aliexpress",
         "http_status": status,
+        "response_bytes": len(body),
         "blocked": blocked,
         "candidate_count": len(items),
         "candidates": items,
     }
     out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2))
     print(f"[margeen] wrote {out_path}")
+
+    # Debug aid: when we got nothing useful, save the raw response body
+    # alongside the JSON so we can inspect what AliExpress actually
+    # served. This is how we tell "bot block" from "JS-only page" from
+    # "geo interstitial".
+    if not items:
+        debug_path = out_dir / f"{ts}_{slugify(prompt)}.debug.html"
+        debug_path.write_text(body, encoding="utf-8")
+        print(f"[margeen] no candidates — saved raw body to {debug_path}")
 
     # Don't fail the workflow when blocked — the JSON record is the finding.
     return 0
