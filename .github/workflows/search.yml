@@ -22,25 +22,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Resolve prompt
         id: prompt
         env:
-          MANUAL_PROMPT: ${{ github.event.inputs.prompt }}
+          INPUT_PROMPT: ${{ inputs.prompt }}
           DISPATCH_PROMPT: ${{ github.event.client_payload.prompt }}
         run: |
-          if [ -n "$MANUAL_PROMPT" ]; then
-            PROMPT="$MANUAL_PROMPT"
-          else
-            PROMPT="$DISPATCH_PROMPT"
-          fi
+          set -euo pipefail
+          RAW="${INPUT_PROMPT:-${DISPATCH_PROMPT:-}}"
+          PROMPT="$(printf '%s' "$RAW" | sed -E 's/^[[:space:]]+|[[:space:]]+$//g')"
+          echo "received: '$RAW' (len=${#RAW})"
+          echo "trimmed:  '$PROMPT' (len=${#PROMPT})"
           if [ -z "$PROMPT" ]; then
-            echo "::error::No prompt supplied in workflow_dispatch input or repository_dispatch payload"
+            echo "::error::No prompt supplied via workflow_dispatch input or repository_dispatch client_payload.prompt"
             exit 1
           fi
-          echo "value=$PROMPT" >> "$GITHUB_OUTPUT"
-          echo "Resolved prompt: $PROMPT"
+          {
+            echo "value<<EOF"
+            echo "$PROMPT"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -52,8 +55,9 @@ jobs:
 
       - name: Commit results
         run: |
-          git config user.email "margeen-bot@users.noreply.github.com"
-          git config user.name "margeen-bot"
+          set -euo pipefail
+          git config user.email "wiswes@users.noreply.github.com"
+          git config user.name "wiswes"
           git add candidates/
           if git diff --staged --quiet; then
             echo "No new candidate files to commit."

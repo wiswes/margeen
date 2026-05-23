@@ -131,9 +131,10 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    print(f"[margeen] argv: {sys.argv!r}", file=sys.stderr)
     prompt = args.prompt.strip()
     if not prompt:
-        print("ERROR: empty prompt", file=sys.stderr)
+        print("ERROR: empty prompt (after strip)", file=sys.stderr)
         return 2
 
     print(f"[margeen] searching AliExpress for: {prompt!r}")
