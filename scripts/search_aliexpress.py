@@ -100,9 +100,12 @@ def parse_items(html_body: str) -> list[dict]:
     items: list[dict] = []
     seen: set[str] = set()
     # Find each product card. AliExpress search items expose
-    # href="//www.aliexpress.com/item/<id>.html..." with a title nearby.
+    # href="//www.aliexpress.<tld>/item/<id>.html..." with a title nearby.
+    # The TLD varies: US visitors (including GitHub Actions runners) are
+    # geo-routed to aliexpress.us; EU/global hits aliexpress.com. Match
+    # any TLD on the aliexpress domain.
     pattern = re.compile(
-        r'href="(//www\.aliexpress\.com/item/(\d+)\.html[^"]*)"[^>]*>'
+        r'href="(//(?:www\.)?aliexpress\.[a-z]{2,3}/item/(\d+)\.html[^"]*)"[^>]*>'
     )
     for m in pattern.finditer(html_body):
         pid = m.group(2)
