@@ -1,0 +1,72 @@
+{
+  "schema": "margeen.search/v1",
+  "timestamp": "20260523T110035Z",
+  "prompt": "compact bluetooth speaker",
+  "source": "aliexpress",
+  "http_status": 200,
+  "response_bytes": 655888,
+  "blocked": false,
+  "candidate_count": 12,
+  "candidates": [
+    {
+      "product_id": "3256811986435148",
+      "url": "https://www.aliexpress.us/item/3256811986435148.html",
+      "title": "Compact M3 Wireless Bluetooth Speaker - Steel Gun Design Heavy Bass Subwoofer for Outdoor Trips & Home Parties"
+    },
+    {
+      "product_id": "3256812141678753",
+      "url": "https://www.aliexpress.us/item/3256812141678753.html",
+      "title": "M1 Mini Bluetooth Speaker Subwoofer Portable Stereo HiFi Bass Speaker Outdoor Sports Audio"
+    },
+    {
+      "product_id": "3256807311390547",
+      "url": "https://www.aliexpress.us/item/3256807311390547.html",
+      "title": "W-KING 80W Speakers Bluetooth Wireless, Portable Outdoor Speakers Loud with Bass Boost, Stereo Pairing, Reverse Charging, IPX6 W"
+    },
+    {
+      "product_id": "3256806997011001",
+      "url": "https://www.aliexpress.us/item/3256806997011001.html",
+      "title": "Portable Speaker Wireless Waterproof Shower Speakers for Smart Phone Bluetooth-compatible mini portable compact bathroom speaker"
+    },
+    {
+      "product_id": "3256812122704257",
+      "url": "https://www.aliexpress.us/item/3256812122704257.html",
+      "title": "Magnetic Bluetooth Speaker, Portable Bluetooth Speaker with RGB Light, Waterproof Wireless Speaker, Phone Stand for iPhone 16/15/14/13/12 Series, Small Speaker for Shower, Outdoor, Birthday Gift"
+    },
+    {
+      "product_id": "3256812066705456",
+      "url": "https://www.aliexpress.us/item/3256812066705456.html",
+      "title": "Portable Bluetooth Speaker, Wireless TWS Pairing IPX5Waterproof 1200mAh Battery TF FM Radio with Stereo Bass for Outdoor Use"
+    },
+    {
+      "product_id": "3256812087315600",
+      "url": "https://www.aliexpress.us/item/3256812087315600.html",
+      "title": "Portable Wireless Bluetooth Speaker LED Light IPX4 Waterproof Loudspeaker Outdoor Bathroom Large Suction Cup Stereo Sound Box"
+    },
+    {
+      "product_id": "3256806577157728",
+      "url": "https://www.aliexpress.us/item/3256806577157728.html",
+      "title": "1PC Mini Wireless Bluetooth Speaker Portable Metal Wireless Loudspeaker Mobile Phone Computer Music Player"
+    },
+    {
+      "product_id": "3256811467845903",
+      "url": "https://www.aliexpress.us/item/3256811467845903.html",
+      "title": "W-KING D8mini-1 Bluetooth Speaker, 30W Portable Wireless Loud Speakers, IPX6 Waterproof Outdoor Speaker, 24H Playtime, EQ, AUX, TF Card"
+    },
+    {
+      "product_id": "3256808962488842",
+      "url": "https://www.aliexpress.us/item/3256808962488842.html",
+      "title": "W-KING 100W Peak 60W RMS Deep Bass Bluetooth Speaker, IPX6 Portable Waterproof Loud Bluetooth Speakers Wireless with Subwoofer"
+    },
+    {
+      "product_id": "3256812039636038",
+      "url": "https://www.aliexpress.us/item/3256812039636038.html",
+      "title": "Portable Bluetooth Speaker RGB Light Wireless Mini Outdoor Camping TWS Stereo Bass Built in Mic Rechargeable Support TF Card"
+    },
+    {
+      "product_id": "3256805508792558",
+      "url": "https://www.aliexpress.us/item/3256805508792558.html",
+      "title": "QERE HF55 Bluetooth Speaker with Hi-Res 20W Audio,Wireless HiFi Portable Speaker IPX5 Waterproof,Multiple connection modes,"
+    }
+  ]
+}
