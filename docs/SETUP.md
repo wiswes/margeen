@@ -85,7 +85,10 @@ Flow, which is free on every Shopify plan since 2022.
 ## 4. Fire one for real
 
 1. Shopify admin → **Products → Add product**.
-2. Title: your search prompt, e.g. `Blue kids pants, >15% margin`.
+2. Title: the product category or short description you want Margeen
+   to search, e.g. `Blue kids pants` or `Wireless earbuds with case`.
+   (Margin and pricing are not part of the Day-1 prompt yet — that
+   arrives in a later chunk.)
 3. **Status: Draft** (do not publish — this is just a trigger).
 4. Tag: `margeen-search`.
 5. Save.

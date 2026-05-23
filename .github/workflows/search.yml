@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       prompt:
-        description: "Search prompt (e.g. 'blue kids pants, 15% margin')"
+        description: "Product category or description (e.g. 'blue kids pants', 'wireless earbuds with case')"
         required: true
         type: string
   repository_dispatch:

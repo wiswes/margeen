@@ -7,8 +7,8 @@ Super-simple v1:
 - Writes the result as JSON under candidates/{ts}_{slug}.json.
 
 Known limitations (the build-in-public risks the day-1 article calls out):
-- Prices are not extracted yet — AliExpress renders them via JS data that
-  needs a JS-aware parser. Day-3 wires a real margin pipeline.
+- Prices are not extracted yet. The prompt is just a category /
+  description on Day 1 — margin and pricing come in a later chunk.
 - AliExpress can serve a bot-detection page to data-centre IPs (GitHub
   Actions runs on Azure). If that happens, the script exits with a clear
   "blocked" finding instead of writing garbage data.
