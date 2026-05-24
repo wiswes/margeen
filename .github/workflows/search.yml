@@ -61,6 +61,11 @@ jobs:
         id: search
         env:
           PROMPT: ${{ steps.prompt.outputs.value }}
+          # Optional: an LLM API key for keyword expansion (chunk 3).
+          # If the secret is unset (e.g. a fork without one) the script
+          # logs a warning and falls back to single-prompt search — the
+          # workflow still completes successfully.
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python scripts/search_aliexpress.py "$PROMPT"
           LATEST=$(ls -t candidates/*.json 2>/dev/null | grep -v latest.json | head -1)
@@ -91,11 +96,15 @@ jobs:
           LATEST_URL="$REPO_URL/blob/main/candidates/latest.json"
           COUNT=$(jq -r '.candidate_count' "$LATEST_FILE")
           BLOCKED=$(jq -r '.blocked' "$LATEST_FILE")
+          VARIANTS=$(jq -r '.expansion.variant_count // 1' "$LATEST_FILE")
+          VARIANTS_BLOCKED=$(jq -r '[.variants[]? | select(.blocked == true)] | length' "$LATEST_FILE")
+          EXPANDED=$(jq -r '.expansion.enabled // false' "$LATEST_FILE")
           {
             echo "## Margeen search — \`$PROMPT\`"
             echo ""
             echo "- **Candidates found:** $COUNT"
-            echo "- **Blocked:** $BLOCKED"
+            echo "- **Variants searched:** $VARIANTS ($VARIANTS_BLOCKED blocked) · expansion enabled: \`$EXPANDED\`"
+            echo "- **Blocked overall:** $BLOCKED"
             echo "- **Result file (this run):** [\`$LATEST_BASENAME\`]($RESULT_URL)"
             echo "- **Stable latest:** [\`candidates/latest.json\`]($LATEST_URL)"
             echo ""
