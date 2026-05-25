@@ -98,30 +98,43 @@ def slugify(text: str, max_len: int = 40) -> str:
     return s[:max_len] or "search"
 
 
-def expand_keywords(prompt: str, timeout: int = 20) -> list[str]:
+def expand_keywords(prompt: str, timeout: int = 20) -> tuple[list[str], dict]:
     """Ask Gemini Flash to fan a single prompt into ~25 search variants.
 
-    Returns a list that always starts with the original prompt — so if
-    expansion silently fails (no key, API error, bad JSON) the caller
-    still gets the Day-2 single-variant behaviour for free.
+    Returns (variants, info). `variants` always starts with the original
+    prompt — so if expansion silently fails (no key, API error, bad JSON)
+    the caller still gets the Day-2 single-variant behaviour for free.
+    `info` carries `error` / `skipped_reason` so the result JSON and step
+    summary can surface why a run produced only 1 variant.
 
     The script intentionally does not hard-fail on a missing key: this
     repo is public and any fork should be able to `Run workflow` without
     a Google Cloud account.
     """
     base = [prompt]
+    info: dict = {"error": None, "skipped_reason": None}
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     if not api_key:
+        info["skipped_reason"] = "GEMINI_API_KEY not set"
         print("[margeen] GEMINI_API_KEY not set — skipping expansion")
-        return base
+        return base, info
 
     user_prompt = (
         f'Generate up to {MAX_VARIANTS} short AliExpress search-query '
-        f'variants a shopper might type to find this: "{prompt}".\n\n'
+        f'variants a shopper might type to find the SAME product as: '
+        f'"{prompt}".\n\n'
+        "Goal: widen the candidate pool across vocabulary the shopper "
+        "may not type, but always for the same product they want.\n\n"
         "Rules:\n"
         "- Each variant 1–5 words, lowercase, no punctuation.\n"
-        "- Include synonyms, common misspellings, sibling categories, "
-        "brand-name variants.\n"
+        "- NEVER include accessories, parts, cases, covers, chargers, "
+        "screens, screen protectors, batteries, cables, stands, or any "
+        "'compatible-with' / 'for X' items. Those are different products.\n"
+        "- DO include: common shopper misspellings, category synonyms "
+        "(e.g. smartphone / cellphone / mobile phone), adjacent model "
+        "years of the same product line (e.g. iphone 16, iphone 18), "
+        "and equivalent products from other brands "
+        "(e.g. samsung galaxy s24, huawei p70).\n"
         "- No questions, no sentences, no duplicates of the original.\n"
         "- Return ONLY a JSON array of strings. No prose, no code fence."
     )
@@ -142,19 +155,35 @@ def expand_keywords(prompt: str, timeout: int = 20) -> list[str]:
         with urllib_request.urlopen(req, timeout=timeout) as r:
             response = json.loads(r.read().decode("utf-8"))
     except (urllib_error.URLError, TimeoutError, json.JSONDecodeError) as e:
+        info["error"] = f"API error: {e}"
         print(f"[margeen] expansion API error: {e} — falling back to single variant")
-        return base
+        return base, info
+
+    # Surface Gemini safety-filter blocks explicitly. When the model
+    # refuses (e.g. "replica" trips the counterfeit filter), the response
+    # has no `parts` and `finishReason` is something other than STOP.
+    finish_reason = None
+    try:
+        finish_reason = response["candidates"][0].get("finishReason")
+    except (KeyError, IndexError):
+        pass
 
     try:
         text = response["candidates"][0]["content"]["parts"][0]["text"]
         raw = json.loads(text)
     except (KeyError, IndexError, json.JSONDecodeError) as e:
-        print(f"[margeen] expansion parse error: {e} — falling back")
-        return base
+        if finish_reason and finish_reason != "STOP":
+            info["error"] = f"Gemini refused ({finish_reason}) — likely safety filter"
+            print(f"[margeen] expansion refused by Gemini (finishReason={finish_reason}) — falling back")
+        else:
+            info["error"] = f"parse error: {e}"
+            print(f"[margeen] expansion parse error: {e} — falling back")
+        return base, info
 
     if not isinstance(raw, list):
+        info["error"] = "did not return a list"
         print("[margeen] expansion did not return a list — falling back")
-        return base
+        return base, info
 
     # Normalise: lowercase, strip, drop empties + the original (we re-add
     # it at the head so it's always variant #0 in the output).
@@ -169,7 +198,7 @@ def expand_keywords(prompt: str, timeout: int = 20) -> list[str]:
         cleaned.append(v)
         seen.add(v)
     print(f"[margeen] expansion: {len(cleaned)} variants from LLM")
-    return base + cleaned[: MAX_VARIANTS - 1]
+    return base + cleaned[: MAX_VARIANTS - 1], info
 
 
 def fetch(prompt: str, timeout: int = 30) -> tuple[int, str]:
@@ -224,6 +253,20 @@ def looks_blocked(html_body: str) -> bool:
 def parse_items(html_body: str) -> list[dict]:
     items: list[dict] = []
     seen: set[str] = set()
+    # Build product_id -> image URL map from the embedded JSON state.
+    # The rendered <img> tags don't carry product thumbnails (those are
+    # lazy-loaded), but the state blob AliExpress ships in the page has
+    # them. Pattern: "productId":"<id>"..."imgUrl":"<url>" within ~400
+    # chars (the gap holds `lunchTime` + the start of the `image` object).
+    image_pat = re.compile(
+        r'"productId":"(\d+)".{0,400}?"imgUrl":"(//[^"]+)"',
+        re.DOTALL,
+    )
+    image_by_pid: dict[str, str] = {}
+    for im in image_pat.finditer(html_body):
+        pid = im.group(1)
+        if pid not in image_by_pid:
+            image_by_pid[pid] = "https:" + im.group(2)
     # Find each product card. AliExpress search items expose
     # href="//www.aliexpress.<tld>/item/<id>.html..." with a title nearby.
     # The TLD varies: US visitors (including GitHub Actions runners) are
@@ -258,6 +301,7 @@ def parse_items(html_body: str) -> list[dict]:
             "title": title,
             "price_str": price_str,
             "price_usd": price_value,
+            "image": image_by_pid.get(pid),
         })
         seen.add(pid)
     return items
@@ -314,8 +358,9 @@ def main() -> int:
 
     if args.no_expand:
         variants = [prompt]
+        expansion_info: dict = {"error": None, "skipped_reason": "--no-expand flag"}
     else:
-        variants = expand_keywords(prompt)
+        variants, expansion_info = expand_keywords(prompt)
     print(f"[margeen] fetching {len(variants)} variant(s) "
           f"(up to {MAX_PARALLEL_FETCHES} in parallel)")
 
@@ -375,6 +420,8 @@ def main() -> int:
             "enabled": not args.no_expand,
             "model": GEMINI_MODEL if not args.no_expand else None,
             "variant_count": len(variants),
+            "error": expansion_info.get("error"),
+            "skipped_reason": expansion_info.get("skipped_reason"),
         },
         "blocked": all_blocked,
         "candidate_count": len(candidates),

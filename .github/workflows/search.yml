@@ -99,11 +99,19 @@ jobs:
           VARIANTS=$(jq -r '.expansion.variant_count // 1' "$LATEST_FILE")
           VARIANTS_BLOCKED=$(jq -r '[.variants[]? | select(.blocked == true)] | length' "$LATEST_FILE")
           EXPANDED=$(jq -r '.expansion.enabled // false' "$LATEST_FILE")
+          EXPANSION_ERROR=$(jq -r '.expansion.error // ""' "$LATEST_FILE")
+          EXPANSION_SKIPPED=$(jq -r '.expansion.skipped_reason // ""' "$LATEST_FILE")
           {
             echo "## Margeen search — \`$PROMPT\`"
             echo ""
             echo "- **Candidates found:** $COUNT"
             echo "- **Variants searched:** $VARIANTS ($VARIANTS_BLOCKED blocked) · expansion enabled: \`$EXPANDED\`"
+            if [ -n "$EXPANSION_ERROR" ]; then
+              echo "- **⚠ Expansion error:** \`$EXPANSION_ERROR\` — fell back to single-prompt search"
+            fi
+            if [ -n "$EXPANSION_SKIPPED" ]; then
+              echo "- **⚠ Expansion skipped:** $EXPANSION_SKIPPED"
+            fi
             echo "- **Blocked overall:** $BLOCKED"
             echo "- **Result file (this run):** [\`$LATEST_BASENAME\`]($RESULT_URL)"
             echo "- **Stable latest:** [\`candidates/latest.json\`]($LATEST_URL)"
@@ -111,12 +119,13 @@ jobs:
             if [ "$COUNT" -gt 0 ]; then
               echo "### Top products (cheapest first)"
               echo ""
-              echo "| Price | Product |"
-              echo "|---|---|"
+              echo "| Image | Price | Product |"
+              echo "|---|---|---|"
               jq -r '
                 [.candidates[] | select(.price_usd != null)] + [.candidates[] | select(.price_usd == null)]
                 | .[0:8][]
-                | "| " + (.price_str // "—")
+                | "| " + (if .image then "<img src=\"" + .image + "\" width=\"100\">" else "—" end)
+                  + " | " + (.price_str // "—")
                   + " | ["
                   + ((.title // "(no title)") | gsub("\\|"; "\\|") | .[0:110])
                   + "](" + .url + ") |"
